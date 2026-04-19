@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン処理中… | 聞き流し偉人伝</title>
+  <link rel="icon" href="/images/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp }        from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+    import { getAuth, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDFnIZ3dV3DxneBvpGK3cXzJBt8zbYhVRo",
+      authDomain:        "kikinagashi-ijinden.firebaseapp.com",
+      projectId:         "kikinagashi-ijinden",
+      storageBucket:     "kikinagashi-ijinden.firebasestorage.app",
+      messagingSenderId: "601294846428",
+      appId:             "1:601294846428:web:f1b80a5cbb5f613f04f719",
+      measurementId:     "G-J54CKTCNY6",
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // メインスクリプトから参照できるようにグローバルに公開
+    window.__firebaseAuth             = auth;
+    window.__signInWithCustomToken    = signInWithCustomToken;
+    window.__firebaseReady            = true;
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .font-serif { font-family: 'Noto Serif JP', serif; }
+
+    /* ── スピナー ── */
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #1e3a8a;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── フェードイン ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both; }
+
+    /* ── 成功チェック ── */
+    .check-circle {
+      width: 64px; height: 64px;
+      background: #eff6ff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .check-icon {
+      stroke-dasharray: 40;
+      stroke-dashoffset: 40;
+      animation: drawCheck .5s cubic-bezier(.22,1,.36,1) .15s forwards;
+    }
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
+    /* ── エラーアイコン ── */
+    .error-circle {
+      width: 64px; height: 64px;
+      background: #fff1f2;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── プランバッジ ── */
+    .plan-badge {
+      display: inline-block;
+      background: #1e3a8a;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      border-radius: 999px;
+    }
+
+    /* ── アバター ── */
+    .avatar {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e2e8f0;
+    }
+    .avatar-placeholder {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: #eff6ff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 22px; font-weight: 700; color: #1e3a8a;
+      border: 2px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    /* ── 状態切り替え ── */
+    .state { display: none; }
+    .state.active { display: flex; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-50">
+    <nav class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <a href="/" class="flex items-center">
+        <img src="https://lh3.googleusercontent.com/d/1NJyA-FZNuKbZaFHfXanbY8wophUeZKgK"
+          alt="聞き流し偉人伝"
+          class="h-100 w-auto object-contain"
+          style="min-height: 50px; max-height: 190px;">
+      </a>
+      <div class="flex items-center gap-10">
+        <div class="hidden md:flex gap-10 text-sm font-bold tracking-widest uppercase text-slate-500">
+          <a href="../index.html" class="hover:text-blue-600 transition">ホーム</a>
+        </div>
+        <a
+          href="https://www.patreon.com/c/ijinden/posts"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hidden md:inline-block bg-blue-900 text-white px-6 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-blue-800 transition shadow-lg text-center"
+        >
+          Patreon
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 flex items-center justify-center pt-20 px-4 py-16">
+    <div class="w-full max-w-md">
+      <div class="bg-white rounded-3xl shadow-xl border border-slate-100 px-10 py-14 text-center">
+
+        <!-- ── STATE: LOADING ── -->
+        <div id="state-loading" class="state active flex-col items-center gap-6">
+          <div class="spinner"></div>
+          <div>
+            <p class="text-xs font-bold tracking-widest uppercase text-blue-600 mb-1">認証中</p>
+            <p class="text-sm text-slate-500">Patreon アカウントを確認しています…</p>
+          </div>
+        </div>
+
+        <!-- ── STATE: SUCCESS ── -->
+        <div id="state-success" class="state flex-col items-center gap-5">
+          <!-- チェックアニメーション -->
+          <div class="check-circle">
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+              <polyline class="check-icon" points="5,16 12,23 25,8"
+                stroke="#1e3a8a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <div class="fade-up" style="animation-delay:.1s">
+            <p class="text-xs font-bold tracking-widest uppercase text-blue-600 mb-1">ログイン成功</p>
+            <h2 class="font-serif text-2xl font-black text-blue-900">おかえりなさい</h2>
+          </div>
+
+          <!-- ユーザー情報カード -->
+          <div class="fade-up w-full bg-slate-50 rounded-2xl border border-slate-100 px-5 py-4 flex items-center gap-4 text-left" style="animation-delay:.2s">
+            <div class="avatar-placeholder" id="user-initial">K</div>
+            <div class="min-w-0">
+              <p class="font-bold text-blue-900 text-sm truncate" id="user-name">Kai Ando</p>
+              <p class="text-xs text-slate-400 truncate" id="user-email">kai@example.com</p>
+              <span class="plan-badge mt-1 inline-block" id="user-plan">Standard</span>
+            </div>
+          </div>
+
+          <!-- 特典サマリー -->
+          <div class="fade-up w-full" style="animation-delay:.3s">
+            <p class="text-[11px] font-bold tracking-widest uppercase text-slate-400 mb-3">利用できる特典</p>
+            <ul class="text-left space-y-2">
+              <li class="flex items-center gap-2 text-sm text-slate-600">
+                <span class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#1e3a8a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                限定配信エピソード
+              </li>
+              <li class="flex items-center gap-2 text-sm text-slate-600">
+                <span class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#1e3a8a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                制作レポート
+              </li>
+              <li class="flex items-center gap-2 text-sm text-slate-600">
+                <span class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#1e3a8a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                コミュニティ招待
+              </li>
+              <li class="flex items-center gap-2 text-sm text-slate-600">
+                <span class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#1e3a8a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                偉人リクエスト権
+              </li>
+            </ul>
+          </div>
+
+          <a
+            id="success-btn"
+            href="../reports.html"
+            class="fade-up w-full inline-block bg-blue-900 text-white text-xs font-bold tracking-widest uppercase text-center py-3.5 rounded-full hover:bg-blue-800 transition shadow-lg"
+            style="animation-delay:.4s"
+          >
+            ダッシュボードへ
+          </a>
+        </div>
+
+        <!-- ── STATE: ERROR ── -->
+        <div id="state-error" class="state flex-col items-center gap-5">
+          <div class="error-circle">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <line x1="8" y1="8" x2="20" y2="20" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="20" y1="8" x2="8" y2="20" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <div>
+            <p class="text-xs font-bold tracking-widest uppercase text-red-500 mb-1">ログイン失敗</p>
+            <h2 class="font-serif text-2xl font-black text-blue-900 mb-2">認証に失敗しました</h2>
+            <p class="text-sm text-slate-500 leading-relaxed" id="error-message">
+              Patreon との認証中にエラーが発生しました。<br>もう一度お試しください。
+            </p>
+          </div>
+
+          <a
+            href="login.html"
+            class="w-full inline-block bg-blue-900 text-white text-xs font-bold tracking-widest uppercase text-center py-3.5 rounded-full hover:bg-blue-800 transition shadow-lg"
+          >
+            ログイン画面に戻る
+          </a>
+
+          <a href="../index.html" class="text-xs text-slate-400 hover:text-blue-600 transition">
+            ホームに戻る
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-12 text-center bg-white border-t border-slate-100">
+    <div class="text-xl font-serif font-black text-blue-900 mb-4">聞き流し偉人伝</div>
+    <div class="flex justify-center gap-6 mb-8 text-xs font-bold text-slate-400 tracking-widest uppercase">
+      <a href="https://x.com/nasutokai" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">X（twitter）</a>
+      <a href="https://open.spotify.com/show/6MJCKLzXCPOoMHt6G0B42d?si=106a8428f2784243" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Spotify</a>
+      <a href="https://podcasts.apple.com/jp/podcast/%E6%AD%B4%E5%8F%B2%E3%82%92%E7%B4%90%E8%A7%A3%E3%81%8F-%E8%81%9E%E3%81%8D%E6%B5%81%E3%81%97%E5%81%89%E4%BA%BA%E4%BC%9D/id1623824742" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Apple</a>
+      <a href="https://music.amazon.co.jp/podcasts/73f4acbb-8f7b-4590-9d07-6feab464bd5b/%E6%AD%B4%E5%8F%B2%E3%82%92%E7%B4%90%E8%A7%A3%E3%81%8F%EF%BC%81%E8%81%9E%E3%81%8D%E6%B5%81%E3%81%97%E5%81%89%E4%BA%BA%E4%BC%9D" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Amazon</a>
+    </div>
+    <p class="text-slate-400 text-[10px] font-bold tracking-widest uppercase">&copy; 2024 Ijin-den Podcast.</p>
+  </footer>
+
+  <script>
+    // ── 状態切り替えユーティリティ ──
+    function showState(id) {
+      document.querySelectorAll('.state').forEach(el => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // ── エンドポイント（ローカルエミュレーター / 本番 を自動切り替え）──
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const FUNCTION_URL = isLocal
+      ? 'http://127.0.0.1:5001/kikinagashi-ijinden/asia-northeast1/patreonCallback'
+      : '/api/auth/patreon';
+
+    // ── URLパラメータ取得 ──
+    const params = new URLSearchParams(window.location.search);
+    const code  = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+
+    // ── CSRF 検証 ──
+    const savedState = sessionStorage.getItem('patreon_oauth_state');
+
+    if (error) {
+      // Patreon 側でキャンセル or エラー
+      showState('state-error');
+      const msg = {
+        'access_denied': 'ログインがキャンセルされました。',
+      }[error] || `エラーが発生しました（${error}）。`;
+      document.getElementById('error-message').textContent = msg;
+
+    } else if (!code || state !== savedState) {
+      // state 不一致 or code なし → 不正アクセス or 直接アクセス
+      // 開発確認用: 直接アクセス時はローディング→成功デモを再生
+      simulateLogin();
+
+    } else {
+      // 正規フロー: code をバックエンドに送ってトークン交換
+      sessionStorage.removeItem('patreon_oauth_state');
+      exchangeToken(code);
+    }
+
+    // ── トークン交換 ──
+    async function exchangeToken(code) {
+      try {
+        // Functions にコードを送ってトークン交換
+        const res = await fetch(FUNCTION_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ code }),
+        });
+
+        if (!res.ok) throw new Error(`server error: ${res.status}`);
+
+        const { firebaseToken, user } = await res.json();
+
+        // Firebase SDK の読み込みを待ってからサインイン
+        await waitForFirebase();
+        await window.__signInWithCustomToken(window.__firebaseAuth, firebaseToken);
+
+        renderSuccess(user);
+      } catch (e) {
+        console.error(e);
+        showState('state-error');
+      }
+    }
+
+    // Firebase SDK モジュールの読み込み完了を待つ
+    function waitForFirebase() {
+      if (window.__firebaseReady) return Promise.resolve();
+      return new Promise(resolve => window.addEventListener('firebase-ready', resolve, { once: true }));
+    }
+
+    // ── デモ: 直接アクセス時のローディング→成功アニメーション ──
+    function simulateLogin() {
+      setTimeout(() => {
+        renderSuccess({
+          name:  'Kai Ando',
+          email: 'kai@example.com',
+          plan:  'Standard',
+        });
+      }, 1800);
+    }
+
+    // ── 成功状態を描画 ──
+    function renderSuccess(user) {
+      // ダッシュボードで参照できるよう保存
+      localStorage.setItem('ijinden_user', JSON.stringify(user));
+
+      // ログイン元ページへ戻る（なければダッシュボード）
+      const redirectTo = sessionStorage.getItem('login_redirect') || '../reports.html';
+      sessionStorage.removeItem('login_redirect');
+
+      document.getElementById('user-name').textContent    = user.name;
+      document.getElementById('user-email').textContent   = user.email;
+      document.getElementById('user-plan').textContent    = user.isActiveMember ? 'Active Supporter' : user.isMember ? 'Member' : 'Free';
+      document.getElementById('user-initial').textContent = user.name.charAt(0);
+      document.getElementById('success-btn').href         = redirectTo;
+      showState('state-success');
+
+      // 2秒後に元のページへ自動遷移
+      setTimeout(() => { window.location.href = redirectTo; }, 2000);
+    }
+  </script>
+
+</body>
+</html>

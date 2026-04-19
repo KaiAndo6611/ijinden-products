@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>サポーター活動報告 | 聞き流し偉人伝</title>
+  <link rel="icon" href="/images/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp }  from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+
+    const app  = initializeApp({
+      apiKey:            "AIzaSyDFnIZ3dV3DxneBvpGK3cXzJBt8zbYhVRo",
+      authDomain:        "kikinagashi-ijinden.firebaseapp.com",
+      projectId:         "kikinagashi-ijinden",
+      storageBucket:     "kikinagashi-ijinden.firebasestorage.app",
+      messagingSenderId: "601294846428",
+      appId:             "1:601294846428:web:f1b80a5cbb5f613f04f719",
+    });
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      // ローディング解除
+      document.getElementById('auth-overlay').style.display = 'none';
+
+      const paywall      = document.getElementById('paywall-2026');
+      const paywallTitle = document.getElementById('paywall-title');
+      const paywallDesc  = document.getElementById('paywall-desc');
+      const paywallBtn   = document.getElementById('paywall-btn');
+
+      if (!firebaseUser) {
+        // 未ログイン → ログインを促すオーバーレイ
+        paywallTitle.textContent = 'ログインが必要です';
+        paywallDesc.textContent  = 'Patreon アカウントでログインすると\n2026年以降のレポートを閲覧できます。';
+        paywallBtn.textContent   = 'Patreon でログイン';
+        paywallBtn.href          = 'auth/login.html';
+        paywall.style.display    = 'flex';
+        return;
+      }
+
+      // ログイン済み：課金確認
+      const token = await firebaseUser.getIdTokenResult();
+      const isActiveMember = token.claims.isActiveMember === true;
+
+      // ヘッダー・モバイルボタンをユーザー名に差し替え
+      const user           = JSON.parse(localStorage.getItem('ijinden_user') || '{}');
+      const loginBtn       = document.getElementById('header-login-btn');
+      const mobileLoginBtn = document.getElementById('mobile-login-btn');
+      if (user.name) {
+        if (loginBtn) {
+          loginBtn.textContent = user.name;
+          loginBtn.href        = '#';
+          loginBtn.classList.remove('bg-blue-900', 'text-white', 'shadow-lg');
+          loginBtn.classList.add('bg-blue-50', 'text-blue-900', 'border', 'border-blue-200');
+        }
+        if (mobileLoginBtn) {
+          mobileLoginBtn.textContent = user.name;
+          mobileLoginBtn.href        = '#';
+          mobileLoginBtn.classList.remove('bg-blue-900', 'text-white');
+          mobileLoginBtn.classList.add('bg-blue-50', 'text-blue-900', 'border', 'border-blue-200');
+        }
+      }
+
+      if (!isActiveMember) {
+        if (token.claims.isMember) {
+          // メンバー登録済み・未課金 → アップグレードページへ
+          window.location.href = 'upgrade.html';
+        } else {
+          // 非メンバー → サポーターを促すオーバーレイ
+          paywallTitle.textContent = 'サポーター限定コンテンツです';
+          paywallDesc.textContent  = '2026年以降のレポートは有料サポーター限定です。\nPatreon でサポートすると閲覧できます。';
+          paywallBtn.textContent   = 'Patreonでサポートする';
+          paywallBtn.href          = 'https://www.patreon.com/c/ijinden/posts';
+          paywallBtn.target        = '_blank';
+          paywallBtn.rel           = 'noopener noreferrer';
+          paywall.style.display    = 'flex';
+        }
+      }
+      // 課金サポーター → ブラー解除・CTAセクション非表示
+      if (isActiveMember) {
+        document.querySelector('.paywall-wrap').classList.add('unlocked');
+        document.querySelector('.cta-sec').style.display = 'none';
+      }
+    });
+  </script>
+
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@700;900&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  .pg{
+    font-family:'Noto Sans JP',sans-serif;
+    background:#fff;
+    color:#0f172a;
+    max-width:1120px;
+    margin:0 auto;
+    padding:0;
+    overflow:hidden;
+  }
+
+  /* ── REVEAL ── */
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+  .stagger .reveal:nth-child(1){transition-delay:.05s}
+  .stagger .reveal:nth-child(2){transition-delay:.13s}
+  .stagger .reveal:nth-child(3){transition-delay:.21s}
+  .stagger .reveal:nth-child(4){transition-delay:.29s}
+  .stagger .reveal:nth-child(5){transition-delay:.37s}
+  .stagger .reveal:nth-child(6){transition-delay:.45s}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── HERO ── */
+  .hero{
+    padding:11rem 1.5rem 5rem;
+    background:
+      radial-gradient(circle at 10% 20%,rgba(59,130,246,.05) 0%,transparent 20%),
+      radial-gradient(circle at 90% 80%,rgba(30,58,138,.05) 0%,transparent 20%),
+      #fff;
+    text-align:center;
+    border-bottom:1px solid #f1f5f9;
+  }
+  .hero-eyebrow{
+    display:inline-block;
+    padding:.4rem 1rem;
+    background:#eff6ff;color:#2563eb;
+    border-radius:999px;
+    font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+    margin-bottom:1.4rem;
+    animation:fadeUp .5s cubic-bezier(.22,1,.36,1) .1s both;
+  }
+  .hero-title{
+    font-family:'Noto Serif JP',serif;
+    font-size:clamp(28px,3.5vw,44px);
+    font-weight:900;line-height:1.45;
+    color:#1e3a8a;
+    margin-bottom:1.4rem;
+    animation:fadeUp .6s cubic-bezier(.22,1,.36,1) .18s both;
+  }
+  .hero-desc{
+    font-size:14px;color:#475569;line-height:2;
+    max-width:560px;margin:0 auto;
+    animation:fadeUp .6s cubic-bezier(.22,1,.36,1) .28s both;
+  }
+
+  /* ── SECTION COMMON ── */
+  .sec-white{background:#fff;padding:5rem 1.5rem;}
+  .sec-gray{background:#f8fafc;padding:5rem 1.5rem;}
+  .sec-inner{max-width:960px;margin:0 auto;}
+
+  .sec-head{text-align:center;margin-bottom:3.5rem;}
+  .sec-eyebrow{
+    display:block;
+    color:#2563eb;font-weight:700;letter-spacing:.28em;
+    font-size:11px;text-transform:uppercase;
+    margin-bottom:1rem;
+  }
+  .sec-title{
+    font-family:'Noto Serif JP',serif;
+    font-size:clamp(26px,3vw,36px);
+    font-weight:900;color:#1e3a8a;
+    line-height:1.4;
+  }
+  .sec-divider{
+    width:48px;height:4px;background:#2563eb;
+    border-radius:999px;margin:1rem auto 0;
+  }
+
+  /* ── YEAR DIVIDER ── */
+  .year-section{margin-bottom:4rem;}
+  .year-section:last-child{margin-bottom:0;}
+  .year-head{
+    display:flex;align-items:center;gap:1.2rem;
+    margin-bottom:2rem;
+  }
+  .year-num{
+    font-family:'Noto Serif JP',serif;
+    font-size:28px;font-weight:900;color:#1e3a8a;
+    letter-spacing:.04em;
+  }
+  .year-line{
+    flex:1;height:1px;background:#e2e8f0;
+  }
+  .year-count{
+    font-size:11px;font-weight:700;letter-spacing:.18em;
+    text-transform:uppercase;color:#94a3b8;
+  }
+
+  /* ── REPORT CARDS ── */
+  .reports-grid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem;
+  }
+  .report-card{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:1.5rem;
+    padding:1.8rem;
+    box-shadow:0 4px 16px rgba(0,0,0,.03);
+    transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;
+    text-decoration:none;
+    color:inherit;
+    display:flex;flex-direction:column;gap:.9rem;
+    position:relative;
+  }
+  .report-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 16px 40px rgba(30,58,138,.1);
+    border-color:#bfdbfe;
+  }
+  .report-card.latest{
+    background:#eff6ff;
+    border-color:#93c5fd;
+  }
+  .latest-badge{
+    position:absolute;top:1.2rem;right:1.2rem;
+    background:#1e3a8a;color:#fff;
+    font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    padding:4px 10px;border-radius:999px;
+  }
+  .report-month{
+    display:flex;align-items:baseline;gap:.5rem;
+  }
+  .report-month-num{
+    font-family:'Noto Serif JP',serif;
+    font-size:32px;font-weight:900;color:#1e3a8a;line-height:1;
+  }
+  .report-month-label{
+    font-size:11px;color:#94a3b8;letter-spacing:.04em;
+  }
+  .report-title{
+    font-family:'Noto Serif JP',serif;
+    font-size:16px;font-weight:700;color:#1e3a8a;
+    line-height:1.6;
+  }
+  .report-desc{
+    font-size:12px;color:#64748b;line-height:1.9;
+    flex:1;
+  }
+  .report-stats{
+    display:flex;gap:1.2rem;
+    padding-top:.9rem;
+    border-top:1px solid #e2e8f0;
+  }
+  .report-stat{
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .report-stat-num{
+    font-size:13px;font-weight:700;color:#1e3a8a;
+  }
+  .report-stat-label{
+    font-size:10px;color:#94a3b8;letter-spacing:.04em;
+  }
+  .report-link{
+    display:flex;align-items:center;gap:.4rem;
+    font-size:11px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:#2563eb;
+    margin-top:.2rem;
+  }
+  .report-link svg{
+    width:12px;height:12px;transition:transform .2s;
+  }
+  .report-card:hover .report-link svg{
+    transform:translateX(3px);
+  }
+
+  /* ── INTRO BOX ── */
+  .intro-box{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:2rem;
+    padding:2.4rem;
+    box-shadow:0 4px 16px rgba(0,0,0,.03);
+    margin-bottom:3rem;
+  }
+  .intro-text{
+    font-size:14px;color:#475569;line-height:2.1;
+  }
+  .intro-text strong{
+    font-weight:700;color:#1e3a8a;
+  }
+
+  /* ── CTA ── */
+  .cta-sec{
+    background:#1e3a8a;
+    padding:5rem 1.5rem;
+    text-align:center;
+  }
+  .cta-title{
+    font-family:'Noto Serif JP',serif;
+    font-size:clamp(22px,3vw,32px);
+    font-weight:900;color:#fff;
+    line-height:1.6;margin-bottom:2rem;
+  }
+  .cta-btn{
+    display:inline-block;
+    background:#fff;color:#1e3a8a;
+    font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+    padding:1rem 2.6rem;border-radius:999px;
+    text-decoration:none;transition:opacity .2s,transform .15s;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+  }
+  .cta-btn:hover{opacity:.9;transform:translateY(-1px);}
+  .cta-note{font-size:11px;color:rgba(255,255,255,.45);margin-top:1.2rem;letter-spacing:.04em;}
+
+  /* ── AUTH OVERLAY ── */
+  #auth-overlay{
+    position:fixed;inset:0;background:#f8fafc;z-index:200;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;
+  }
+  .auth-spinner{
+    width:40px;height:40px;
+    border:4px solid #e2e8f0;border-top-color:#1e3a8a;
+    border-radius:50%;animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .auth-loading-text{font-size:13px;color:#94a3b8;}
+
+  /* ── PAYWALL ── */
+  .paywall-wrap{
+    position:relative;
+  }
+  .paywall-wrap .reports-grid{
+    filter:blur(6px);
+    pointer-events:none;
+    user-select:none;
+  }
+  .paywall-wrap.unlocked .reports-grid{
+    filter:none;
+    pointer-events:auto;
+    user-select:auto;
+  }
+  #paywall-2026{
+    display:none;
+    position:absolute;inset:0;
+    flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:1.2rem;
+    background:rgba(248,250,252,.85);
+    backdrop-filter:blur(2px);
+    border-radius:1.5rem;
+    padding:2.5rem;
+    z-index:10;
+  }
+  .paywall-icon{
+    width:56px;height:56px;border-radius:50%;
+    background:#eff6ff;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .paywall-title{
+    font-family:'Noto Serif JP',serif;
+    font-size:20px;font-weight:900;color:#1e3a8a;
+  }
+  .paywall-desc{
+    font-size:13px;color:#64748b;line-height:2;white-space:pre-line;
+  }
+  .paywall-btn{
+    display:inline-block;
+    background:#1e3a8a;color:#fff;
+    font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    padding:.8rem 2rem;border-radius:999px;
+    text-decoration:none;transition:background .2s,transform .15s;
+    box-shadow:0 8px 24px rgba(30,58,138,.2);
+  }
+  .paywall-btn:hover{background:#1d4ed8;transform:translateY(-1px);}
+
+  @media(max-width:640px){
+    .hero{padding:7rem 1.5rem 3rem;}
+    .reports-grid{grid-template-columns:1fr !important;}
+    .sec-white,.sec-gray{padding:3.5rem 1.5rem !important;}
+    .intro-box{padding:1.6rem;}
+    .hero-title{font-size:26px !important;line-height:1.4;}
+    .year-head{gap:.8rem;}
+    .year-num{font-size:22px;}
+  }
+  </style>
+</head>
+
+<body>
+
+<!-- ローディングオーバーレイ -->
+<div id="auth-overlay">
+  <div class="auth-spinner"></div>
+  <p class="auth-loading-text">認証情報を確認中…</p>
+</div>
+
+<div class="pg">
+
+  <!-- NAV -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-50">
+    <nav class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <a href="/" class="flex items-center">
+        <img src="https://lh3.googleusercontent.com/d/1NJyA-FZNuKbZaFHfXanbY8wophUeZKgK"
+             alt="聞き流し偉人伝"
+             class="h-100 w-auto object-contain"
+             style="min-height: 50px; max-height: 190px;">
+      </a>
+      <div class="flex items-center gap-10">
+        <div class="hidden md:flex gap-10 text-sm font-bold tracking-widest uppercase text-slate-500">
+          <a href="index.html" class="hover:text-blue-600 transition">ホーム</a>
+          <a href="reports.html" class="text-blue-600 transition">活動報告</a>
+        </div>
+        <a id="header-login-btn"
+           href="auth/login.html"
+           class="hidden md:inline-block bg-blue-900 text-white px-6 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-blue-800 transition shadow-lg text-center">
+          ログイン
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <span class="hero-eyebrow">Monthly Reports</span>
+    <h1 class="hero-title">サポーター活動報告</h1>
+    <p class="hero-desc">
+      いつも聞き流し偉人伝を応援していただきありがとうございます。毎月の活動内容・収支・プロジェクト進捗を、サポーターの皆様に向けて誠実にご報告いたします。
+    </p>
+  </section>
+
+  <!-- INTRO + REPORTS -->
+  <section class="sec-white reveal">
+    <div class="sec-inner">
+      <div class="sec-head">
+        <span class="sec-eyebrow">Reports</span>
+        <h2 class="sec-title">月次レポート一覧</h2>
+        <div class="sec-divider"></div>
+      </div>
+
+      <div class="intro-box reveal">
+        <p class="intro-text">
+          私たちはサポーターの皆様を<strong>共に番組を育てる仲間</strong>だと考えています。だからこそ、毎月の活動・収益・課題を包み隠さず共有していくことが大切だと思っています。配信実績、ご支援いただいた金額の使いみち、進行中のプロジェクトの裏側まで、ぜひお気軽にご覧ください。
+        </p>
+      </div>
+
+      <!-- 2026年（サポーター限定） -->
+      <div class="year-section reveal">
+        <div class="year-head">
+          <span class="year-num">2026</span>
+          <div class="year-line"></div>
+          <span class="year-count">3 Reports</span>
+          <span style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:#1e3a8a;color:#fff;padding:3px 10px;border-radius:999px;">Supporters Only</span>
+        </div>
+        <div class="paywall-wrap">
+          <!-- ペイウォールオーバーレイ -->
+          <div id="paywall-2026">
+            <div class="paywall-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="11" width="18" height="11" rx="2" stroke="#1e3a8a" stroke-width="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p class="paywall-title" id="paywall-title">ログインが必要です</p>
+            <p class="paywall-desc" id="paywall-desc">Patreon アカウントでログインすると&#10;2026年以降のレポートを閲覧できます。</p>
+            <a class="paywall-btn" id="paywall-btn" href="auth/login.html">Patreon でログイン</a>
+          </div>
+        <div class="reports-grid stagger">
+
+          <!-- 3月（最新） -->
+          <a href="2026-03.html" class="report-card latest reveal">
+            <span class="latest-badge">Latest</span>
+            <div class="report-month">
+              <span class="report-month-num">03</span>
+              <span class="report-month-label">March 2026</span>
+            </div>
+            <div class="report-title">Podcast以外への活動が、<br>具体的になった一ヶ月</div>
+            <div class="report-desc">
+              房野史典さんとのゲスト回収録が完了。Podcast Weekend出展準備や執筆完了など、Podcastの枠を超えた活動が動き出した3月のご報告です。
+            </div>
+            <div class="report-stats">
+              <div class="report-stat">
+                <span class="report-stat-num">198,662</span>
+                <span class="report-stat-label">月間再生</span>
+              </div>
+              <div class="report-stat">
+                <span class="report-stat-num">+1,639</span>
+                <span class="report-stat-label">新規フォロワー</span>
+              </div>
+              <div class="report-stat">
+                <span class="report-stat-num">¥29,991</span>
+                <span class="report-stat-label">月間収益</span>
+              </div>
+            </div>
+            <div class="report-link">
+              レポートを読む
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+          </a>
+
+          <!-- 2月（プレースホルダー） -->
+          <a href="#" class="report-card reveal" style="opacity:.55;cursor:not-allowed;" onclick="return false;">
+            <div class="report-month">
+              <span class="report-month-num">02</span>
+              <span class="report-month-label">February 2026</span>
+            </div>
+            <div class="report-title">準備中</div>
+            <div class="report-desc">
+              過去のレポートは順次公開予定です。今しばらくお待ちください。
+            </div>
+            <div class="report-link" style="color:#94a3b8;">
+              Coming Soon
+            </div>
+          </a>
+
+          <!-- 1月（プレースホルダー） -->
+          <a href="#" class="report-card reveal" style="opacity:.55;cursor:not-allowed;" onclick="return false;">
+            <div class="report-month">
+              <span class="report-month-num">01</span>
+              <span class="report-month-label">January 2026</span>
+            </div>
+            <div class="report-title">準備中</div>
+            <div class="report-desc">
+              過去のレポートは順次公開予定です。今しばらくお待ちください。
+            </div>
+            <div class="report-link" style="color:#94a3b8;">
+              Coming Soon
+            </div>
+          </a>
+
+        </div><!-- /.reports-grid -->
+        </div><!-- /.paywall-wrap -->
+      </div><!-- /.year-section -->
+
+    </div>
+  </section>
+
+  <!-- Mobile Fixed Bottom CTA -->
+  <div class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/90 backdrop-blur border-t border-slate-100 px-4 pt-3" style="padding-bottom: max(1.25rem, env(safe-area-inset-bottom));">
+    <a id="mobile-login-btn" href="auth/login.html" class="block w-full text-center bg-blue-900 text-white text-xs font-bold tracking-widest uppercase py-3.5 rounded-full transition shadow-lg">
+      Patreonでログイン
+    </a>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-sec reveal">
+    <p class="cta-title">"いいもの"を、<br>これからも一緒に。</p>
+    <a class="cta-btn" href="https://www.patreon.com/c/ijinden/posts" target="_blank" rel="noopener noreferrer">Patreonでサポートする</a>
+    <p class="cta-note">Patreon経由で安全にご登録いただけます　·　いつでも解約可能</p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 pb-28 md:pb-12 text-center bg-white border-t border-slate-100">
+    <div class="text-xl font-serif font-black text-blue-900 mb-4">聞き流し偉人伝</div>
+    <div class="flex justify-center gap-6 mb-8 text-xs font-bold text-slate-400 tracking-widest uppercase">
+      <a href="https://x.com/nasutokai" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">X（twitter）</a>
+      <a href="https://open.spotify.com/show/6MJCKLzXCPOoMHt6G0B42d?si=106a8428f2784243" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Spotify</a>
+      <a href="https://podcasts.apple.com/jp/podcast/%E6%AD%B4%E5%8F%B2%E3%82%92%E7%B4%90%E8%A7%A3%E3%81%8F-%E8%81%9E%E3%81%8D%E6%B5%81%E3%81%97%E5%81%89%E4%BA%BA%E4%BC%9D/id1623824742" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Apple</a>
+      <a href="https://music.amazon.co.jp/podcasts/73f4acbb-8f7b-4590-9d07-6feab464bd5b/%E6%AD%B4%E5%8F%B2%E3%82%92%E7%B4%90%E8%A7%A3%E3%81%8F%EF%BC%81%E8%81%9E%E3%81%8D%E6%B5%81%E3%81%97%E5%81%89%E4%BA%BA%E4%BC%9D" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Amazon</a>
+    </div>
+    <p class="text-slate-400 text-[10px] font-bold tracking-widest uppercase">&copy; 2024 Ijin-den Podcast.</p>
+  </footer>
+
+</div>
+
+<script>
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

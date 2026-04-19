@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>サポーターにアップグレード | 聞き流し偉人伝</title>
+  <link rel="icon" href="/images/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .font-serif { font-family: 'Noto Serif JP', serif; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both; }
+
+    .plan-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.5rem;
+      padding: 1.8rem;
+      transition: transform .3s, box-shadow .3s, border-color .3s;
+    }
+    .plan-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(30,58,138,.1);
+      border-color: #bfdbfe;
+    }
+    .plan-card.featured {
+      background: #eff6ff;
+      border-color: #93c5fd;
+      box-shadow: 0 10px 30px rgba(30,58,138,.12);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-50">
+    <nav class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <a href="/" class="flex items-center">
+        <img src="https://lh3.googleusercontent.com/d/1NJyA-FZNuKbZaFHfXanbY8wophUeZKgK"
+          alt="聞き流し偉人伝"
+          class="h-100 w-auto object-contain"
+          style="min-height: 50px; max-height: 190px;">
+      </a>
+      <div class="flex items-center gap-10">
+        <div class="hidden md:flex gap-10 text-sm font-bold tracking-widest uppercase text-slate-500">
+          <a href="index.html" class="hover:text-blue-600 transition">ホーム</a>
+        </div>
+        <a
+          id="header-user-btn"
+          href="auth/login.html"
+          class="hidden md:inline-block bg-blue-900 text-white px-6 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-blue-800 transition shadow-lg text-center"
+        >
+          ログイン
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 pt-20 px-4 py-16">
+    <div class="max-w-2xl mx-auto">
+
+      <!-- ウェルカムバナー -->
+      <div class="fade-up bg-blue-50 border border-blue-100 rounded-2xl px-6 py-4 flex items-center gap-3 mb-8" style="animation-delay:.05s">
+        <span class="text-xl">👋</span>
+        <div>
+          <p class="text-xs font-bold tracking-widest uppercase text-blue-600 mb-0.5">Member</p>
+          <p class="text-sm text-blue-900 font-bold">
+            Patreon への参加ありがとうございます！
+          </p>
+        </div>
+      </div>
+
+      <!-- メインカード -->
+      <div class="fade-up bg-white rounded-3xl shadow-xl border border-slate-100 px-8 py-10 text-center mb-8" style="animation-delay:.1s">
+        <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-blue-50 flex items-center justify-center">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M14 3l2.8 8.6H25l-7.3 5.3 2.8 8.6L14 20.2l-6.5 5.3 2.8-8.6L3 11.6h8.2z" stroke="#1e3a8a" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="text-xs font-bold tracking-widest uppercase text-blue-600 mb-2">Upgrade</p>
+        <h1 class="font-serif text-2xl font-black text-blue-900 mb-3 leading-snug">
+          有料サポーターになって<br>限定コンテンツを解放しよう
+        </h1>
+        <p class="text-sm text-slate-500 leading-relaxed mb-8">
+          現在は無料メンバーとして登録されています。月額サポートを開始すると、ダッシュボードや月次レポートなどの限定コンテンツが閲覧できます。
+        </p>
+
+        <!-- 特典リスト -->
+        <ul class="text-left space-y-3 mb-8 max-w-xs mx-auto">
+          <li class="flex items-center gap-3 text-sm text-slate-600">
+            <span class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#1e3a8a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            サポーターダッシュボード
+          </li>
+          <li class="flex items-center gap-3 text-sm text-slate-600">
+            <span class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#1e3a8a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            月次活動レポート（2026年〜）
+          </li>
+          <li class="flex items-center gap-3 text-sm text-slate-600">
+            <span class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#1e3a8a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            限定配信エピソード
+          </li>
+          <li class="flex items-center gap-3 text-sm text-slate-600">
+            <span class="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#1e3a8a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            偉人リクエスト権・コミュニティ招待
+          </li>
+        </ul>
+
+        <a
+          href="https://www.patreon.com/c/ijinden/posts"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block w-full bg-blue-900 text-white text-xs font-bold tracking-widest uppercase py-4 rounded-full hover:bg-blue-800 transition shadow-lg mb-3"
+        >
+          Patreon でサポートを開始する
+        </a>
+        <p class="text-[11px] text-slate-400">月額 $3〜 · いつでも解約可能</p>
+      </div>
+
+      <!-- プランカード -->
+      <div class="fade-up grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8" style="animation-delay:.2s">
+        <a href="https://www.patreon.com/c/ijinden/posts" target="_blank" rel="noopener noreferrer" class="plan-card text-center block">
+          <p class="text-[10px] font-bold tracking-widest uppercase text-blue-500 mb-2">Light</p>
+          <p class="font-serif text-2xl font-black text-blue-900 mb-1">$3<span class="text-sm font-normal text-slate-400">/月</span></p>
+          <p class="text-[11px] text-slate-400 mb-3">約450円〜</p>
+          <p class="text-xs text-slate-500">限定エピソード・制作レポート</p>
+        </a>
+        <a href="https://www.patreon.com/c/ijinden/posts" target="_blank" rel="noopener noreferrer" class="plan-card featured text-center relative block">
+          <span class="absolute -top-px left-1/2 -translate-x-1/2 bg-blue-900 text-white text-[9px] font-bold tracking-wider uppercase px-3 py-1 rounded-b-lg">人気</span>
+          <p class="text-[10px] font-bold tracking-widest uppercase text-blue-500 mb-2">Standard</p>
+          <p class="font-serif text-2xl font-black text-blue-900 mb-1">$5<span class="text-sm font-normal text-slate-400">/月</span></p>
+          <p class="text-[11px] text-slate-400 mb-3">約750円〜</p>
+          <p class="text-xs text-slate-500">全特典 + コミュニティ・リクエスト権</p>
+        </a>
+        <a href="https://www.patreon.com/c/ijinden/posts" target="_blank" rel="noopener noreferrer" class="plan-card text-center block">
+          <p class="text-[10px] font-bold tracking-widest uppercase text-blue-500 mb-2">Premium</p>
+          <p class="font-serif text-2xl font-black text-blue-900 mb-1">$10<span class="text-sm font-normal text-slate-400">/月</span></p>
+          <p class="text-[11px] text-slate-400 mb-3">約1,500円〜</p>
+          <p class="text-xs text-slate-500">全特典 + 優先リクエスト権</p>
+        </a>
+      </div>
+
+      <p class="fade-up text-center text-xs text-slate-400" style="animation-delay:.25s">
+        <a href="index.html" class="hover:text-blue-600 transition">ホームに戻る</a>
+      </p>
+    </div>
+  </main>
+
+  <!-- Mobile Fixed Bottom CTA -->
+  <div class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/90 backdrop-blur border-t border-slate-100 px-4 pt-3" style="padding-bottom: max(1.25rem, env(safe-area-inset-bottom));">
+    <a href="https://www.patreon.com/c/ijinden/posts" target="_blank" rel="noopener noreferrer" class="block w-full text-center bg-blue-900 text-white text-xs font-bold tracking-widest uppercase py-3.5 rounded-full transition shadow-lg">
+      Patreonでサポートを開始する
+    </a>
+  </div>
+
+  <!-- Footer -->
+  <footer class="py-12 pb-28 md:pb-12 text-center bg-white border-t border-slate-100">
+    <div class="text-xl font-serif font-black text-blue-900 mb-4">聞き流し偉人伝</div>
+    <div class="flex justify-center gap-6 mb-8 text-xs font-bold text-slate-400 tracking-widest uppercase">
+      <a href="https://x.com/nasutokai" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">X（twitter）</a>
+      <a href="https://open.spotify.com/show/6MJCKLzXCPOoMHt6G0B42d?si=106a8428f2784243" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Spotify</a>
+      <a href="https://podcasts.apple.com/jp/podcast/%E6%AD%B4%E5%8F%B2%E3%82%92%E7%B4%90%E8%A7%A3%E3%81%8F-%E8%81%9E%E3%81%8D%E6%B5%81%E3%81%97%E5%81%89%E4%BA%BA%E4%BC%9D/id1623824742" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Apple</a>
+      <a href="https://music.amazon.co.jp/podcasts/73f4acbb-8f7b-4590-9d07-6feab464bd5b/%E6%AD%B4%E5%8F%B2%E3%82%92%E7%B4%90%E8%A7%A3%E3%81%8F%EF%BC%81%E8%81%9E%E3%81%8D%E6%B5%81%E3%81%97%E5%81%89%E4%BA%BA%E4%BC%9D" class="hover:text-blue-600" target="_blank" rel="noopener noreferrer">Amazon</a>
+    </div>
+    <p class="text-slate-400 text-[10px] font-bold tracking-widest uppercase">&copy; 2024 Ijin-den Podcast.</p>
+  </footer>
+
+  <script>
+    // ユーザー名をローカルストレージから取得して表示
+    const user = JSON.parse(localStorage.getItem('ijinden_user') || '{}');
+    if (user.name) {
+      document.getElementById('user-name').textContent = user.name;
+      const btn = document.getElementById('header-user-btn');
+      btn.textContent = user.name;
+      btn.href = '#';
+      btn.classList.remove('bg-blue-900', 'text-white', 'shadow-lg');
+      btn.classList.add('bg-blue-50', 'text-blue-900', 'border', 'border-blue-200');
+    }
+  </script>
+
+</body>
+</html>
